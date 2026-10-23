@@ -21,7 +21,7 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 from anytrip import build_model, fetch_route, geocode_place, on_time_prob, predict  # noqa: E402
-from common import OUTPUTS, load_cleaned, load_routes  # noqa: E402
+from common import HOUR_TO_BUCKET, OUTPUTS, load_cleaned, load_routes  # noqa: E402
 from deliverby import (  # noqa: E402
     arrival_table_measured_span,
     arrival_table_modelled_span,
@@ -45,7 +45,8 @@ st.set_page_config(
 
 
 @st.cache_data
-def get_data():
+def get_data(cache_version: int = 2):
+    # cache_version busts any dataframe cached by an older deployment
     return load_cleaned()
 
 
@@ -55,6 +56,10 @@ def get_routes():
 
 
 df = get_data()
+if "time_bucket" not in df.columns:
+    # Defensive: a dataframe cached before the slim loader learned to
+    # rebuild time_bucket must not crash Route Explorer.
+    df = df.assign(time_bucket=df["hour"].map(HOUR_TO_BUCKET))
 routes = get_routes()
 label_to_code = dict(zip(routes["label_full"], routes["route_code"]))
 
