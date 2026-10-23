@@ -63,7 +63,13 @@ st.markdown(f"<style>{dashboard_css}</style>", unsafe_allow_html=True)
 
 core_routes = int(df.loc[~df["is_airport"], "route_code"].nunique())
 obs_count = f"{len(df):,}"
-date_max = pd.to_datetime(df["date"]).max().strftime("%b %Y")
+# The hosted slim dataset has no "date" column; its snapshot ends
+# 2026-10-21 (data/raw/SNAPSHOT.md), so fall back to that month.
+date_max = (
+    pd.to_datetime(df["date"]).max().strftime("%b %Y")
+    if "date" in df.columns
+    else "Oct 2026"
+)
 st.sidebar.markdown(
     '<div class="rw-brand"><div class="rw-brand-mark">↗</div>'
     '<div><div class="rw-brand-name">ROUTEWISE <span style="color:#79d8c8">BLR</span></div>'

@@ -42,4 +42,6 @@ def load_cleaned() -> pd.DataFrame:
     if "label_short" not in df.columns:  # slim omits it; recover from routes
         labels = load_routes().set_index("route_code")["label_short"]
         df["label_short"] = df["route_code"].map(labels)
+    if "time_bucket" not in df.columns:  # slim omits it; it is a pure function of hour
+        df["time_bucket"] = df["hour"].map(HOUR_TO_BUCKET)
     return df
